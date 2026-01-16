@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Búsqueda simple – SI-VOC</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+:root{
+  --bg:#f4f6f9;
+  --card:#fff;
+  --line:#dcdfe6;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --primary:#2f5f8f;
+}
+body{
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:var(--bg);
+}
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.container{
+  flex:1;
+  max-width:1200px;
+  padding:10px;
+  margin-left: 20px
+  margin-right: 20px;
+}
+.container1{
+  flex:1;
+  max-width:1200px;
+  padding:10px;
+  margin-left: -30px;
+}
+h1{margin-bottom:20px}
+.section{
+  background:#ffffff;
+  border:1px solid #dcdfe6;
+  border-radius:6px;
+}
+.section-header{
+  padding:10px 14px;
+  background:#f8fafc;
+  border-bottom:1px solid var(--line);
+  font-weight:bold;
+}
+.dropdown{
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  background:#fff;
+  border:1px solid #dcdfe6;
+  border-radius:4px;
+  max-height:220px;
+  overflow-y:auto;
+  z-index:100;
+}
+
+.dropdown-item{
+  padding:8px 10px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.dropdown-item:hover{
+  background:#f3f4f6;
+}
+
+.hidden{
+  display:none;
+}
+/* clase base para TODO el formulario */
+.input-base{
+  height:34px;
+  width: 60px; 
+  padding:5px 1px;
+  font-size:14px;
+  text-align:center;
+  border:1px solid #dcdfe6;
+  border-radius:6px;
+  box-sizing:border-box;
+}
+.date-range-compact{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.date-mini{
+  width:140px;      /* compacto pero legible */
+  font-size:14px;   /* un pelín menor */
+}
+
+.date-range-compact span{
+  color:#6b7280;
+  font-weight:bold;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:10px 20px;
+  padding:16px;
+}
+.field label{
+  display:block;
+  font-size:14px;
+  color:var(--muted);
+  margin-bottom:4px;
+}
+.field input,
+.field select{
+  width:100%;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.logic{
+  display: flex;
+  justify-content: right;
+  gap:10px;
+}
+.logic button{
+  padding:6px 14px;
+  border:2px solid var(--line);
+  background:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+.logic button.active{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
+.actions{
+  text-align:center
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.actions button{
+ text-align:center
+ padding:8px 20px;
+}
+.primary{
+  background:var(--primary);
+  color:#fff;
+  border:1px solid var(--primary);
+}
+/* ===== CABECERA SUPERIOR ===== */
+.topbar{
+  height:56px;
+  background:linear-gradient(180deg,#2f4f74,#1f3a5a);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  color:#fff;
+}
+
+.topbar-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  height:32px;
+}
+
+.title .main{
+  font-size:16px;
+  font-weight:bold;
+  line-height:1;
+}
+
+.title .sub{
+  font-size:12px;
+  opacity:0.85;
+}
+
+.topbar-menu{
+  display:flex;
+  gap:22px;
+}
+
+.topbar-menu a{
+  color:#e5e7eb;
+  text-decoration:none;
+  font-size:14px;
+  display:flex;
+  align-items:center;
+}
+
+.topbar-menu a:hover{
+  color:#ffffff;
+  text-decoration:underline;
+}
+/* ===== BARRA DE NAVEGACIÓN / BREADCRUMB ===== */
+.subbar{
+  background:#f3f4f6;
+  border-bottom:1px solid #e5e7eb;
+  padding:10px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.breadcrumb{
+  font-size:13px;
+  color:#6b7280;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.breadcrumb a{
+  color:#3b82f6;
+  text-decoration:none;
+}
+
+.breadcrumb a:hover{
+  text-decoration:underline;
+}
+
+.breadcrumb .current{
+  color:#374151;
+  font-weight:500;
+}
+
+.subbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.subbar-btn{
+  padding:6px 12px;
+  font-size:13px;
+  border-radius:6px;
+  border:1px solid #d1d5db;
+  background:#ffffff;
+  cursor:pointer;
+}
+
+.subbar-btn:hover{
+  background:#f9fafb;
+}
+
+.icon-btn{
+  width:32px;
+  height:32px;
+  border-radius:6px;
+  border:1px solid #d1d5db;
+  background:#ffffff;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.icon-btn:hover{
+  background:#f9fafb;
+}
+/* ===== FOOTER ===== */
+.footer{
+  margin-top:40px;
+  border-top:1px solid #e5e7eb;
+  background:#f9fafb;
+  font-size:12px;
+  color:#6b7280;
+}
+
+.footer-top{
+  padding:10px 24px;
+  display:flex;
+  align-items:center;
+}
+
+.footer-brand{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.footer-brand::before{
+  content:"🏛️";
+  margin-right:6px;
+}
+
+.legal-link{
+  color:#2563eb;
+  text-decoration:none;
+}
+
+.legal-link:hover{
+  text-decoration:underline;
+}
+
+.footer-bottom{
+  padding:8px 24px 14px;
+  font-size:11px;
+  color:#9ca3af;
+}
+.results-layout{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:24px;
+}
+
+.filters{
+  background:#fff;
+  border:1px solid #dcdfe6;
+  border-radius:6px;
+  padding:14px;
+  font-size:14px;
+}
+
+.filter-block{
+  margin-bottom:18px;
+}
+
+.filter-block h3{
+  font-size:14px;
+  font-weight:bold;
+  margin-bottom:6px;
+}
+.filter-block h4{
+  font-size:14p;
+}
+
+.filter-block label{
+  display:flex;
+  gap:6px;
+  margin:4px 0;
+  cursor:pointer;
+}
+
+.filter-block span{
+  color:#6b7280;
+}
+
+.subfilter{
+  margin-left:16px;
+  margin-top:6px;
+}
+
+.limit-btn{
+  width:100%;
+  margin-top:16px;
+  padding:8px;
+  background:#2f5f8f;
+  color:#fff;
+  border:none;
+  border-radius:4px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.results{
+  background:#fff;
+  border:1px solid #dcdfe6;
+  border-radius:6px;
+  padding:16px;
+}
+
+.result-item{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="title">
+      <div class="main">SI-VOC</div>
+      <div class="sub">Informe pericial electrónico (índice: SI-VOC)</div>
+    </div>
+  </div>
+
+  <nav class="topbar-menu">
+    <a href="#">Inicio</a>
+    <a href="#">Mis Consultas</a>
+    <a href="#">Administrador</a>
+    <a href="#">Salir</a>
+  </nav>
+</header>
+
+
+<div class="subbar">
+  <div class="breadcrumb">
+    <a href="index.html">Inicio</a>
+    <span>/
+    <a href="simple.html" class="subbar-btn">Búsqueda simple</a>
+  </span></div>
+
+  <div class="subbar-actions">
+    <a href="index.html" class="subbar-btn">Búsqueda avanzada</a>
+    <button class="icon-btn" title="Editar">
+      ✎
+    </button>
+  </div>
+</div>
+
+<div class="container">
+<div class="section">
+  <div class="section-header">Resultados de la búsqueda</div>
+  <div style="padding:16px">
+    <p><span id="search-term"></span></p>
+  </div>
+  </div>
+        </div>
+
+<div class="results-layout">
+
+  <!-- COLUMNA IZQUIERDA: FILTROS -->
+  <div class="container">
+  <aside class="filters">
+
+    <div class="filter-block">
+      <h3>Estado de elaboración</h3>
+      <label><input type="checkbox"> EEO1 (original) <span>(2690)</span></label>
+      <label><input type="checkbox"> EEO3 (copia electrón.) <span>(9880)</span></label>
+    </div>
+
+    <div class="filter-block">
+      <h3>Fecha de creación</h3>
+      <label><input type="checkbox"> Último año</label>
+      <label><input type="checkbox"> Año anterior</label>
+      <label><input type="checkbox"> Últimos 5 años</label>
+<label><input type="checkbox"><input
+  id="simple-search"
+  type="text"
+  class="input-base"
+  placeholder="Año">
+  </label>
+        
+      <div class="subfilter">
+        
+        
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <h3>Tipología</h3>
+      <label><input type="checkbox"> Antropológico forense (IAF) <span>(1247)</span></label>
+      <label><input type="checkbox"> Autopsia (IA) <span>(4523)</span></label>
+      <label><input type="checkbox"> Levantamiento restos óseos (ILO) <span>(48)</span></label>
+      <label><input type="checkbox"> Previsión de sanidad (IP) <span>(125)</span></label>
+      <label><input type="checkbox"> Psicosocial (IPS) <span>(2314)</span></label>
+      <label><input type="checkbox"> Psiquiátrico (IPQ) <span>(934)</span></label>
+      <label><input type="checkbox"> Reconocimiento cadáver (IRC) <span>(87)</span></label>
+      <label><input type="checkbox"> Valoración integral (IVFI) <span>(4539)</span></label>
+    </div>
+
+    <div class="filter-block">
+      <h3>Lugar de los hechos</h3>
+      <label><input type="checkbox"> A Coruña (15) <span>(4070)</span></label>
+      <label><input type="checkbox"> Lugo (27) <span>(2015)</span></label>
+      <label><input type="checkbox"> Ourense (32) <span>(3123)</span></label>
+      <label><input type="checkbox"> Pontevedra (36) <span>(3359)</span></label>
+    </div>
+
+    <div class="filter-block">
+      <h3>Materia</h3>
+      <label><input type="checkbox"> Anatomía (A) <span>(785)</span></label>
+      <label><input type="checkbox"> Organismos (B) <span>(267)</span></label>
+      <label><input type="checkbox"> Enfermedades (C) <span>(2469)</span></label>
+      <label><input type="checkbox"> Productos quím. y fármacos (D) <span>(133)</span></label>
+      <label><input type="checkbox"> Técnicas (E) <span>(687)</span></label>
+      <label><input type="checkbox"> Psiquiatría y psicología (F) <span>(822)</span></label>
+<label><input type="checkbox"> Trastornos psicóticos <span>(114)</span></label>
+      <div class="subfilter">
+        
+        
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <h3>Etiología médico-legal</h3>
+      <label><input type="checkbox"> Accidental (A) <span>(689)</span></label>
+      <label><input type="checkbox"> Homicida (H) <span>(375)</span></label>
+      <label><input type="checkbox"> Suicida (S) <span>(4753)</span></label>
+    </div>
+
+    <div class="filter-block">
+      <h3>Naturaleza de la muerte</h3>
+      <label><input type="checkbox"> Natural (N) <span>(578)</span></label>
+      <label><input type="checkbox"> Violenta (V) <span>(5817)</span></label>
+      <label><input type="checkbox"> Sin determinar (SD) <span>(39)</span></label>
+    </div>
+
+    <div class="filter-block">
+      <h3>Sujeto</h3>
+      <label><input type="checkbox"> Hombre (H) <span>(7542)</span></label>
+      <label><input type="checkbox"> Mujer (M) <span>(4981)</span></label>
+      <label><input type="checkbox"> No consta (NC) <span>(47)</span></label>
+    </div>
+
+    <a href="filtrado.html" class="limit-btn" id="limit-btn">LIMITAR</a>
+
+  </aside>
+</div>
+  <!-- COLUMNA DERECHA: RESULTADOS -->
+  <div class="container1">
+  <main class="results">
+    <h2>Resultados (50)</h2>
+<p>Informe pericial nº1 sobre <span class="search-term"></span></p>
+<p>Informe pericial nº2 sobre <span class="search-term"></span></p>
+<p>Informe pericial nº3 sobre <span class="search-term"></span></p>
+<p>(más sobre <span class="search-term"></span>...)</p>
+  </main>
+</div>
+</div>
+<footer class="footer">
+  <div class="footer-top">
+    <span class="footer-brand">
+      Ministerio de Justicia · Gobierno de España © 2026 · Todos los derechos reservados ·
+      <a href="#" class="legal-link">Aviso legal</a>
+    </span>
+  </div>
+
+  <div class="footer-bottom">
+    <p>
+      Las citas de diálogo mantenido, reproducción de contenidos y demás textos
+      se permiten siempre que no se altere su significado. Se prohíbe su
+      reproducción con fines comerciales.
+    </p>
+  </div>
+</footer>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+
+  // URLSearchParams ya devuelve el valor decodificado
+  // pero puede venir con + si se construyó manualmente
+  const qRaw = params.get("q") || "";
+  const term = qRaw.replace(/\+/g, " ").trim();
+
+  // 1) Encabezado (tu span de arriba)
+  const headerSpan = document.getElementById("search-term");
+  if (headerSpan) headerSpan.textContent = term;
+
+  // 2) Todos los spans de los informes
+  document.querySelectorAll(".search-term").forEach(el => {
+    el.textContent = term;
+  });
+})();
+</script>
+<script>
+document.getElementById("limit-btn").addEventListener("click", function () {
+
+  const params = new URLSearchParams(window.location.search);
+  const searchTerm = params.get("q") || "";
+
+  const filtrosSeleccionados = [];
+
+  // Recorremos TODOS los filtros
+  document.querySelectorAll(".filter-block").forEach(block => {
+
+    const nombreFiltro = block.querySelector("h3")?.innerText.trim();
+    if (!nombreFiltro) return;
+
+    block.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+      const texto = cb.parentElement.innerText
+        .replace(/\(\d+\)/g, "")
+        .trim();
+
+      filtrosSeleccionados.push(texto);
+    });
+  });
+
+  // Construimos la URL
+  const url = new URL("filtrado.html", window.location.origin);
+
+  if (searchTerm) url.searchParams.set("q", searchTerm);
+
+  if (filtrosSeleccionados.length > 0) {
+    url.searchParams.set(
+      "filtros",
+      filtrosSeleccionados.join("|")
+    );
+  }
+
+  window.location.href = url.toString();
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const params = new URLSearchParams(window.location.search);
+
+  // 1️⃣ Texto buscado
+  const q = params.get("q") || "";
+
+  // 2️⃣ Filtros seleccionados
+  const filtrosRaw = params.get("filtros") || "";
+  const filtros = filtrosRaw ? filtrosRaw.split("|") : [];
+
+  // 3️⃣ Construir texto completo
+  let textoFinal = q;
+
+  if (filtros.length > 0) {
+    textoFinal += " · " + filtros.join(" · ");
+  }
+
+  // 4️⃣ Insertar en TODOS los spans
+  document.querySelectorAll(".search-term").forEach(el => {
+    el.textContent = textoFinal;
+  });
+
+  // DEBUG (déjalo ahora, luego lo quitas)
+  console.log("Texto buscado:", q);
+  console.log("Filtros:", filtros);
+  console.log("Texto final:", textoFinal);
+});
+</script>
+<script>
+document.getElementById("limit-btn").addEventListener("click", function (e) {
+  e.preventDefault(); // ⛔ bloquea el href="#"
+
+  const params = new URLSearchParams(window.location.search);
+  const searchTerm = params.get("q") || "";
+
+  const filtrosSeleccionados = [];
+
+  document.querySelectorAll(".filter-block").forEach(block => {
+    block.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+      const texto = cb.parentElement.innerText
+        .replace(/\(\d+\)/g, "")
+        .trim();
+      filtrosSeleccionados.push(texto);
+    });
+  });
+
+  const query = new URLSearchParams();
+
+  if (searchTerm) query.set("q", searchTerm);
+  if (filtrosSeleccionados.length > 0) {
+    query.set("filtros", filtrosSeleccionados.join("|"));
+  }
+
+  window.location.href = "filtrado.html?" + query.toString();
+});
+</script>
+</body>
+</html>
